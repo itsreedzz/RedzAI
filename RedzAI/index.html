@@ -624,18 +624,21 @@
             const messageDiv = document.createElement('div');
             
             if (role === 'user') {
-                messageDiv.className = 'flex gap-3 md:gap-4 w-full flex-row-reverse';
-                let imageHtml = imageSrc ? `<img src="${imageSrc}" class="max-w-[200px] rounded-lg mb-2 border border-slate-200 object-cover shadow-sm">` : '';
+                // Tambahkan 'items-start' agar gelembung tidak meregang secara vertikal
+                messageDiv.className = 'flex gap-3 md:gap-4 w-full flex-row-reverse items-start';
+                let imageHtml = imageSrc ? `<img src="${imageSrc}" class="max-w-[200px] md:max-w-[280px] rounded-lg mb-2 border border-white/20 object-cover shadow-sm">` : '';
                 messageDiv.innerHTML = `
                     <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 shadow-sm border border-primary/20">
-                        <i class="fa-solid fa-user text-sm"></i>
+                       <i class="fa-solid fa-user text-sm"></i>
                     </div>
-                    <div class="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm max-w-[85%] whitespace-pre-wrap text-sm md:text-base flex flex-col items-end">
+                    <!-- Tambahkan 'w-fit' dan 'break-words' agar ukuran kotak pas mengikuti panjang teks/gambar -->
+                    <div class="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm max-w-[85%] w-fit break-words whitespace-pre-wrap text-sm md:text-base flex flex-col items-end leading-relaxed">
                         ${imageHtml}
-                        ${formatSimpleMarkdown(text)}
+                        <div>${formatSimpleMarkdown(text)}</div>
                     </div>
                 `;
             } else {
+
                 messageDiv.className = 'flex gap-3 md:gap-4 w-full group';
                 
                 if (isLoading) {
