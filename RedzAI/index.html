@@ -131,7 +131,11 @@
                 <p class="text-[10px] md:text-xs text-slate-500 font-medium">by Redy N.A</p>
             </div>
         </div>
-        <div class="flex gap-1 md:gap-2">
+        <div class="flex gap-1 md:gap-2 items-center">
+            <!-- Tambahan tombol login -->
+            <button id="loginHeaderBtn" class="bg-primary hover:bg-blue-600 text-white px-4 py-1.5 rounded-xl text-sm font-medium shadow-sm transition-all hidden" onclick="document.getElementById('authModal').classList.remove('hidden')">
+                Login
+            </button>
             <button id="openSidebarBtn" class="text-slate-500 hover:text-primary hover:bg-primary/10 p-2 md:p-2.5 rounded-full transition-all" title="Riwayat Percakapan">
                 <i class="fa-solid fa-bars-staggered text-lg"></i>
             </button>
@@ -260,19 +264,22 @@
             }
 
             onAuthStateChanged(auth, async (user) => {
+                const loginHeaderBtn = document.getElementById('loginHeaderBtn'); // Tambahkan ini
+                
                 if (user) {
                     if (currentUser) {
-                        // Sesi valid, sembunyikan modal auth dan muat data cloud
                         authModal.classList.add('hidden');
+                        loginHeaderBtn.classList.add('hidden'); // Sembunyikan jika sudah login
                         loggedInUserDisplay.textContent = `@${currentUser.username}`;
                         await loadConversationsFromCloud();
                     } else {
-                        // Belum ada sesi lokal, JANGAN tampilkan modal di awal
                         authModal.classList.add('hidden'); 
-                        startNewChat(); // Tampilkan sapaan awal chat
+                        loginHeaderBtn.classList.remove('hidden'); // Tampilkan jika belum login
+                        startNewChat();
                     }
                 } else {
-                    // Autentikasi anonim default untuk memulai koneksi cloud database
+                    loginHeaderBtn.classList.remove('hidden'); // Tampilkan jika tidak ada user
+                    
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
@@ -362,13 +369,16 @@
                         return;
                     }
 
+                    // ... (kode sebelumnya)
                     currentUser = { username: rawUsername, uid: auth.currentUser?.uid || 'anon' };
                     localStorage.setItem('redz_ai_session', JSON.stringify(currentUser));
-
+                    
                     authModal.classList.add('hidden');
+                    document.getElementById('loginHeaderBtn').classList.add('hidden'); // Tambahkan ini
                     loggedInUserDisplay.textContent = `@${currentUser.username}`;
                     await loadConversationsFromCloud();
                     resetAuthBtn();
+                    // ... (kode setelahnya)
                 }
             } catch (err) {
                 console.error("Auth error:", err);
@@ -400,6 +410,7 @@
                 usernameInput.value = '';
                 passwordInput.value = '';
                 authModal.classList.remove('hidden');
+                document.getElementById('loginHeaderBtn').classList.remove('hidden'); // Tambahkan ini
                 toggleSidebar(false);
             }
         });
