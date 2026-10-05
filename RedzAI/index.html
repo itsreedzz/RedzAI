@@ -189,8 +189,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        // Ubah baris import ini:
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         const appId = 'redz-ai-global-app';
 
         // MASUKKAN CONFIG FIREBASE KAMU DI SINI:
@@ -549,16 +549,59 @@
             emptyHistoryMsg.style.display = 'none';
 
             allConversations.forEach(conv => {
-                const btn = document.createElement('button');
                 const isAktif = conv.id === currentConversationId;
-                btn.className = `w-full text-left p-3 rounded-xl transition-colors text-sm truncate flex items-center gap-2 ${isAktif ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-slate-100 text-slate-700'}`;
-                btn.innerHTML = `<i class="fa-regular fa-message opacity-70"></i> ${conv.title || 'Chat Baru'}`;
+                
+                // Buat container pembungkus
+                const divWrapper = document.createElement('div');
+                divWrapper.className = `flex items-center w-full rounded-xl transition-colors mb-1 pr-1 ${isAktif ? 'bg-primary/10' : 'hover:bg-slate-100'}`;
+
+                // Tombol utama untuk membuka chat
+                const btn = document.createElement('button');
+                btn.className = `flex-1 text-left p-3 text-sm truncate flex items-center gap-2 ${isAktif ? 'text-primary font-medium' : 'text-slate-700'}`;
+                btn.innerHTML = `<i class="fa-regular fa-message opacity-70"></i> <span class="truncate">${conv.title || 'Chat Baru'}</span>`;
                 btn.onclick = () => {
                     loadConversation(conv.id);
                     toggleSidebar(false);
                 };
-                conversationList.appendChild(btn);
+
+                // Tombol untuk menghapus chat
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'w-8 h-8 mr-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0 flex items-center justify-center';
+                deleteBtn.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
+                deleteBtn.title = "Hapus Chat";
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation(); // Mencegah chat terbuka saat tombol hapus diklik
+                    deleteConversation(conv.id);
+                };
+
+                divWrapper.appendChild(btn);
+                divWrapper.appendChild(deleteBtn);
+                conversationList.appendChild(divWrapper);
             });
+        }
+
+        async function deleteConversation(id) {
+            if (!confirm("Yakin mau menghapus riwayat chat ini?")) return;
+
+            try {
+                // Menghapus data dari Firestore
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_users', currentUser.username, 'conversations', id);
+                await deleteDoc(docRef);
+
+                // Menghapus data dari memori lokal (array)
+                allConversations = allConversations.filter(c => c.id !== id);
+
+                // Jika chat yang sedang aktif dihapus, kembali ke tampilan chat baru
+                if (currentConversationId === id) {
+                    startNewChat();
+                }
+
+                // Render ulang sidebar
+                renderSidebar();
+            } catch (error) {
+                console.error("Error deleting conversation:", error);
+                showError("Gagal menghapus riwayat chat.");
+            }
         }
 
         function startNewChat() {
