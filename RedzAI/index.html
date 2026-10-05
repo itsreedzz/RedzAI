@@ -406,11 +406,16 @@
                 currentConversationId = null;
                 currentMessages = [];
                 allConversations = [];
+                
+                // TAMBAHKAN DUA BARIS INI:
+                renderSidebar(); // Merender ulang sidebar agar daftar chat kosong
+                loggedInUserDisplay.textContent = ''; // Mengosongkan nama user yang nyantol
+                
                 chatArea.innerHTML = '';
                 usernameInput.value = '';
                 passwordInput.value = '';
                 authModal.classList.remove('hidden');
-                document.getElementById('loginHeaderBtn').classList.remove('hidden'); // Tambahkan ini
+                document.getElementById('loginHeaderBtn').classList.remove('hidden');
                 toggleSidebar(false);
             }
         });
